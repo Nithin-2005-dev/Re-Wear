@@ -1,9 +1,11 @@
 import React from 'react'
+import NavBar from '../components/NavBar'
 
 const Requests = () => {
   return (
-    <div>
-      
+    <div >
+    <NavBar/>
+      Requests
     </div>
   )
 }
