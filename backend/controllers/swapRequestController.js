@@ -1,12 +1,11 @@
-import SwapRequest from "../models/SwapRequest.js";
+import SwapRequest from "../models/swap.js";
 import Item from "../models/Item.js";
 import mongoose from "mongoose";
 
 export const createSwapRequest = async (req, res) => {
   try {
-    const { requesterItem, targetItem } = req.body;
-    const requester = req.user._id;
-
+    const { requesterItem, targetItem ,requester} = req.body;
+    
     if (!requesterItem || !targetItem) {
       return res.status(400).json({ success: false, message: "Both item IDs are required" });
     }
@@ -76,13 +75,13 @@ export const acceptSwapRequest = async (req, res) => {
 export const rejectSwapRequest = async (req, res) => {
   try {
     const request = await SwapRequest.findById(req.params.id);
+    console.log(req.body)
     if (!request || request.status !== "pending") {
       return res.status(404).json({ success: false, message: "Swap request not found or already handled" });
     }
-
-    if (request.receiver.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized to reject this request" });
-    }
+    // if (request.receiver.toString() !== req.body.userId.toString()) {
+    //   return res.status(403).json({ success: false, message: "Not authorized to reject this request" });
+    // }
 
     request.status = "rejected";
     await request.save();
@@ -95,7 +94,7 @@ export const rejectSwapRequest = async (req, res) => {
 
 export const getMySwapRequests = async (req, res) => {
   try {
-    const requests = await SwapRequest.find({ requester: req.user._id })
+    const requests = await SwapRequest.find({ requester: req.params.id })
       .populate("requesterItem targetItem receiver", "title images");
 
     return res.status(200).json({ success: true, requests });
@@ -106,8 +105,10 @@ export const getMySwapRequests = async (req, res) => {
 
 export const getIncomingSwapRequests = async (req, res) => {
   try {
-    const requests = await SwapRequest.find({ receiver: req.user._id, status: "pending" })
-      .populate("requesterItem targetItem requester", "title images");
+    const requests = await SwapRequest.find({ receiver: req.params.id, status: "pending" })
+    .populate('requester')
+  .populate('requesterItem')
+  .populate('targetItem');
 
     return res.status(200).json({ success: true, requests });
   } catch (err) {

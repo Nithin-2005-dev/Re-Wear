@@ -3,7 +3,7 @@ import {
   createRedeemRequest,
   respondToRedeemRequest,
   getUserRedeemRequests,
-} from "../controllers/redeemRequest.controller.js";
+} from "../controllers/redeemRequestController.js";
 import { protect } from "../middleware/auth.js";
 
 const redeemRouter = express.Router();

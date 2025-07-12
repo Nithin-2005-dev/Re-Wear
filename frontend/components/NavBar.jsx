@@ -8,7 +8,7 @@ const NavBar = () => {
     <div className="navbar bg-base-100 shadow-sm">
       <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
         <div className="w-10 rounded-full">
-          <img alt="logo" src="image.png" />
+          <img alt="logo" src="logo.png" />
         </div>
       </div>
       <div className="flex-1">

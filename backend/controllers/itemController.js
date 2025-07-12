@@ -16,8 +16,8 @@ export const createItem = async (req, res) => {
       tags,
       redeemCost,
     } = req.body;
-
-    if (!req.user?._id) {
+    console.log(req.body)
+    if (!req.body.userId) {
       return res.status(400).json({
         success: false,
         message: "User is required",
@@ -68,7 +68,7 @@ export const createItem = async (req, res) => {
       redeemCost: redeemCost || 10,
       images: uploadedUrls,
       imageIds: uploadedIds,  // ✅ add this line
-      uploader: req.user._id,
+      uploader: req.body.userId,
     });
 
     res.status(201).json({
@@ -131,10 +131,6 @@ export const getItemById = async (req, res) => {
     });
   }
 };
-
-import Item from "../models/Item.js";
-import cloudinary from "../config/cloudinary.js";
-import mongoose from "mongoose";
 
 export const deleteItem = async (req, res) => {
   try {
@@ -242,3 +238,12 @@ export const updateItem = async (req, res) => {
     });
   }
 };
+export const getItemsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const items = await Item.find({ uploader: userId, status: 'approved' })
+    res.status(200).json({ items })
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Server error" })
+  }
+}
