@@ -8,3 +8,5 @@ export const itemRouter = express.Router();
 itemRouter.post("/create", protect, multerMiddleware.array("images",5), createItem)
 itemRouter.get("/all", getAllItems);
 itemRouter.get("/:id", getItemById);
+itemRouter.put("/update/:id", protect, updateItem);
+itemRouter.delete("/delete/:id", protect, deleteItem);

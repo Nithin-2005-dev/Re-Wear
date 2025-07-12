@@ -131,3 +131,114 @@ export const getItemById = async (req, res) => {
     });
   }
 };
+
+import Item from "../models/Item.js";
+import cloudinary from "../config/cloudinary.js";
+import mongoose from "mongoose";
+
+export const deleteItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid item ID",
+      });
+    }
+
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: "Item not found",
+      });
+    }
+
+    if (item.uploader.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this item",
+      });
+    }
+
+    for (const imgUrl of item.images) {
+      const publicId = imgUrl.split("/").pop().split(".")[0];
+      await cloudinary.v2.uploader.destroy(publicId);
+    }
+
+    await Item.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Item deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message || "Server error",
+    });
+  }
+};
+export const updateItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      title,
+      description,
+      category,
+      type,
+      size,
+      condition,
+      tags,
+      redeemCost,
+      available,
+    } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid item ID",
+      });
+    }
+
+    const item = await Item.findById(id);
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: "Item not found",
+      });
+    }
+
+    if (item.uploader.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to update this item",
+      });
+    }
+
+    item.title = title || item.title;
+    item.description = description || item.description;
+    item.category = category || item.category;
+    item.type = type || item.type;
+    item.size = size || item.size;
+    item.condition = condition || item.condition;
+    item.tags = tags ? tags.split(",") : item.tags;
+    item.redeemCost = redeemCost || item.redeemCost;
+    if (available !== undefined) item.available = available;
+
+    await item.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Item updated successfully",
+      item,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message || "Server error",
+    });
+  }
+};
